@@ -1,19 +1,18 @@
-package entity;
+package com.example.test.entity;
 
-import entity.content.Content;
-import entity.content.UserContent;
+import com.example.test.entity.content.Content;
+import com.example.test.entity.content.UserContent;
 import jakarta.persistence.*;
 import lombok.*;
-import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Comment;
 import org.springframework.util.StringUtils;
 
 @Entity
 @Getter
-@Builder
+@Setter(AccessLevel.PACKAGE)
 @AllArgsConstructor
 @NoArgsConstructor
-public class User {
+public class User extends BaseEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -32,6 +31,10 @@ public class User {
     @Comment("닉네임")
     private String nickname;
 
+    @Comment("유저등급")
+    @Enumerated(EnumType.STRING)
+    private UserAuth userAuth;
+
     @Comment("프로필")
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private UserContent userContent;
@@ -42,16 +45,15 @@ public class User {
                               String nickname,
                               Content content) {
         User user = new User();
-        User userBuilder = User.builder()
-                .name(name)
-                .loginId(loginId)
-                .loginPw(loginPw)
-                .nickname(nickname)
-                .userContent(UserContent.create(content, user))
-                .build();
+        user.setName(name);
+        user.setLoginId(loginId);
+        user.setLoginPw(loginPw);
+        user.setNickname(nickname);
+        user.setUserContent(UserContent.create(content, user));
 
-        return userBuilder;
+        return user;
     }
+
 
     public void update(String name,
                               String loginId,

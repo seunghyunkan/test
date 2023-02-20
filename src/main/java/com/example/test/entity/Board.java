@@ -1,24 +1,25 @@
-package entity;
+package com.example.test.entity;
 
-import entity.content.BoardContent;
-import entity.content.Content;
+import com.example.test.entity.content.BoardContent;
+import com.example.test.entity.content.Content;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Comment;
+import org.springframework.util.StringUtils;
 
-import java.sql.Array;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Getter
-@Builder
-@AllArgsConstructor
+@Setter(AccessLevel.PACKAGE)
 @NoArgsConstructor
-public class Board extends Content {
+@AllArgsConstructor
+public class Board extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "boardId")
     private String id;
     @Comment("제목")
     private String title;
@@ -27,7 +28,7 @@ public class Board extends Content {
     private String post;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "board")
+    @JoinColumn(name = "userId")
     private User user;
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -37,27 +38,39 @@ public class Board extends Content {
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BoardContent> boardContentList = new ArrayList<>();
 
+
     public static Board create(String title,
                                String post,
                                User user,
                                List<Comments> comments,
                                List<Content> contentList) {
         Board board = new Board();
-        List<BoardContent> boardContents = new ArrayList<>();
+        List<BoardContent> boardContent = new ArrayList<>();
         for (Content content : contentList) {
-            boardContents.add(BoardContent.builder().board(null).build()) ;
+            boardContent.add(BoardContent.create(content, board));
         }
+        board.setTitle(title);
+        board.setPost(post);
+        board.setUser(user);
+        board.setComments(comments);
+        board.setBoardContentList(boardContent);
 
-        Board boardBuilder = Board.builder()
-                .title(title)
-                .post(post)
-                .user(user)
-                .comments(comments)
-                .boardContentList(boardContents)
-                .build();
-
-        return boardBuilder;
+        return board;
     }
 
+    public void update(String title,
+                       String post,
+                       List<Content> contentList) {
+        List<BoardContent> boardContents = new ArrayList<>();
 
+        if (StringUtils.hasText(title)) {
+            this.title = title;
+        }
+        if (StringUtils.hasText(post)) {
+            this.post = post;
+        }
+        if (contentList != null) {
+
+        }
+    }
 }
